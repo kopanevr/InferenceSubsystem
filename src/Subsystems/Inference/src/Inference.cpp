@@ -346,8 +346,12 @@ bool Inference::prepareInputTensors() {
 
 /// @brief
 bool Inference::inference() {
-  auto *inputTensorNames = inferenceContext_->inputTensorNames.data();
-  auto *outputTensorNames = inferenceContext_->outputTensorNames.data();
+  if (!inferenceContext_ || inferenceContext_->session) {
+    return false;
+  }
+
+  const char *const *inputTensorNames = inferenceContext_->inputTensorNames.data();
+  const char *const *outputTensorNames = inferenceContext_->outputTensorNames.data();
 
   auto *inputTensorValue = inferenceContext_->inputTensorValues.data()->get();
   auto *outputTensorValue = inferenceContext_->outputTensorValues.data()->get();
