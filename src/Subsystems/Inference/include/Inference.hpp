@@ -105,7 +105,7 @@ private:
   /// @brief Возвращает информацию о модели.
   /// @param inferenceContext Контекст вывода.
   /// @return Информация о модели.
-  [[nodiscard]] std::unique_ptr<ModelInfo> getModelInfo(const InferenceContext &inferenceContext);
+  [[nodiscard]] std::unique_ptr<ModelInfo> getModelInfo(InferenceContext &inferenceContext);
 
 private:
   /// @brief

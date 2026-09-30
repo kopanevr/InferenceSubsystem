@@ -3,6 +3,7 @@
 //
 
 #include <memory>
+#include <vector>
 
 //
 
@@ -23,8 +24,6 @@ struct TensorInfo final {
   ONNXTensorElementDataType tensorElementDataType;
   /// @brief Указатель на размерность тензора.
   std::shared_ptr<std::vector<int64_t>> shape;
-  /// @brief Имя.
-  std::unique_ptr<std::string> name;
 };
 
 //// @brief
@@ -49,9 +48,6 @@ struct Tensor final {
     /// @brief Размерность тензора.
     std::shared_ptr<std::vector<int64_t>> shape;
   } metaData;
-
-  /// @brief
-  std::unique_ptr<Ort::Value> value;
 
   /// @brief Сырые данные тензора.
   std::vector<std::byte> rawData;
@@ -103,8 +99,14 @@ struct InferenceContext final {
   /// @brief
   ModelPath optimizedModelPath;
 
-  std::vector<char *> inputTensorNames;
+  /// @brief
+  std::vector<const char *> inputTensorNames;
+  /// @brief
+  std::vector<const char *> outputTensorNames;
 
-  std::vector<char *> inputTensorNames
+  /// @brief
+  std::vector<std::unique_ptr<Ort::Value>> inputTensorValues;
+  /// @brief
+  std::vector<std::unique_ptr<Ort::Value>> outputTensorValues;
 };
 } // namespace inference

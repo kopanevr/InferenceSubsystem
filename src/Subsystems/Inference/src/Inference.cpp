@@ -71,7 +71,7 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
   */
 
   // Создание локального контекста вывода.
-  auto localContext = std::make_unique<InferenceContext>(new (std::nothrow) InferenceContext());
+  auto localContext = std::unique_ptr<InferenceContext>(new (std::nothrow) InferenceContext());
   if (!localContext) {
     return false;
   }
@@ -173,8 +173,9 @@ bool Inference::createInputOutputTensors() {
     inputTensor->metaData.shape->size(), //
     inferenceContext_->modelInfo->inputTensorInfo->tensorElementDataType
   );
-  inferenceContext_->inputTensor->value.reset(new (std::nothrow) Ort::Value(std::move(value)));
-  if (!inferenceContext_->inputTensor->value) {
+  auto &inputTensorValue = inferenceContext_->inputTensorValues.at(0);
+  inputTensorValue.reset(new (std::nothrow) Ort::Value(std::move(value)));
+  if (!inputTensorValue) {
     return false;
   }
 
@@ -191,8 +192,9 @@ bool Inference::createInputOutputTensors() {
     outputTensor->metaData.shape->size(), //
     inferenceContext_->modelInfo->outputTensorInfo->tensorElementDataType
   );
-  inferenceContext_->outputTensor->value.reset(new (std::nothrow) Ort::Value(std::move(value)));
-  if (!inferenceContext_->outputTensor->value) {
+  auto &outputTensorValue = inferenceContext_->outputTensorValues.at(0);
+  outputTensorValue.reset(new (std::nothrow) Ort::Value(std::move(value)));
+  if (!outputTensorValue) {
     return false;
   }
 
@@ -215,7 +217,7 @@ bool Inference::createInputOutputTensors() {
 /// @brief Возвращает информацию о модели.
 /// @param inferenceContext Контекст вывода.
 /// @return Информация о модели.
-std::unique_ptr<ModelInfo> Inference::getModelInfo(const InferenceContext &inferenceContext) {
+std::unique_ptr<ModelInfo> Inference::getModelInfo(InferenceContext &inferenceContext) {
   // Создание информации о модели
   auto modelInfo = std::unique_ptr<ModelInfo>(new (std::nothrow) ModelInfo());
   if (!modelInfo) {
@@ -226,10 +228,11 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(const InferenceContext &infer
   Ort::AllocatorWithDefaultOptions allocator{};
 
   // Получение имени входа.
-  modelInfo->inputTensorInfo->name = inferenceContext.session->GetInputNameAllocated(0, allocator).get();
-  if (!modelInfo->inputTensorInfo->name) {
+  auto inputNameAllocated = inferenceContext.session->GetInputNameAllocated(0, allocator);
+  if (!inputNameAllocated) {
     return nullptr;
   }
+  inferenceContext.inputTensorNames.push_back(inputNameAllocated.get());
 
   // Получение информации о типе входа.
   auto typeInfo = inferenceContext.session->GetInputTypeInfo(0);
@@ -246,16 +249,17 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(const InferenceContext &infer
 #if (USER_OPTION_SHOW_MODEL_INFO == 1)
   // Вывод информации о входе.
   LOG("Вход: ");
-  LOG("Имя: ", modelInfo->inputTensorInfo->name);
+  LOG("Имя: ", inferenceContext.inputTensorNames.at(0));
   PRINT_TENSOR_SHAPE(modelInfo->inputTensorInfo); // Смотреть выше.
   LOG("Тип элементов: ", modelInfo->inputTensorInfo->tensorElementDataType);
 #endif
 
-  // Получение имени выхода.
-  modelInfo->outputTensorInfo->name = inferenceContext.session->GetOutputNameAllocated(0, allocator).get();
-  if (!modelInfo->outputTensorInfo->name.c_str()) {
+  // Получение имени входа.
+  auto outputNameAllocated = inferenceContext.session->GetOutputNameAllocated(0, allocator);
+  if (!outputNameAllocated) {
     return nullptr;
   }
+  inferenceContext.outputTensorNames.push_back(outputNameAllocated.get());
 
   // Получение информации о типе выхода.
   typeInfo = inferenceContext.session->GetOutputTypeInfo(0);
@@ -272,7 +276,7 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(const InferenceContext &infer
 #if (USER_OPTION_SHOW_MODEL_INFO == 1)
   // Вывод информации о входе.
   LOG("Выход: ");
-  LOG("Имя: ", modelInfo->outputTensorInfo->name);
+  LOG("Имя: ", inferenceContext.outputTensorNames.at(0));
   PRINT_TENSOR_SHAPE(modelInfo->outputTensorInfo); // Смотреть выше.
   LOG("Тип элементов: ", modelInfo->outputTensorInfo->tensorElementDataType);
 #endif
@@ -342,15 +346,19 @@ bool Inference::prepareInputTensors() {
 
 /// @brief
 bool Inference::inference() {
+  auto *inputTensorNames = inferenceContext_->inputTensorNames.data();
+  auto *outputTensorNames = inferenceContext_->outputTensorNames.data();
+
+  auto *inputTensorValue = inferenceContext_->inputTensorValues.data()->get();
+  auto *outputTensorValue = inferenceContext_->outputTensorValues.data()->get();
+
   inferenceContext_->session->Run(
     *inferenceContext_->runOptions,
-    //
-    inferenceContext_->modelInfo->inputTensorInfo->name.c_str(),
-    inferenceContext_->inputTensor->value.get(),
+    inputTensorNames,
+    inputTensorValue,
     inferenceContext_->modelInfo->inputCount,
-    //
-    inferenceContext_->modelInfo->inputTensorInfo->name.c_str(),
-    inferenceContext_->outputTensor->value.get(),
+    outputTensorNames,
+    outputTensorValue,
     inferenceContext_->modelInfo->outputCount
   );
 
