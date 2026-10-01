@@ -17,11 +17,6 @@ using namespace cmd;
 /// @param argc Количество аргументов.
 /// @param argv Указатель на список аргументов.
 bool Application::prepare(int argc, char *argv[]) {
-  // Вывод информации о приложении.
-  printInfo();
-
-  DEBUG("Инициализация приложения.");
-
   // Создание контекста приложения.
   applicationContext_.reset(new (std::nothrow) ApplicationContext());
   if (!applicationContext_) {

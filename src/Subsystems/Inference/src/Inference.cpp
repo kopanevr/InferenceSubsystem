@@ -96,6 +96,12 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
 
   inferenceContext_ = std::move(localContext);
 
+  // Установка путей к моделям.
+  if (!setModelFilePath()) {
+    ERROR("Ошибка при установке путей к моделям.");
+    return false;
+  }
+
   if (prepareProvider()) {
     inferenceContext_->sessionOptions->EnableProfiling("");
 

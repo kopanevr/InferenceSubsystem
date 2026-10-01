@@ -61,9 +61,6 @@ private:
   void init() override {
     SET_SUBSYSTEM_ID(subsystemManager::SubsystemId::Inference);
     SET_SUBSYSTEM_NAME("Inference");
-
-    // Установка пути к модели.
-    setModelFilePath();
   }
 
   /// @brief Предварительная настройка перед запуском подсистемы.
@@ -91,7 +88,7 @@ private:
   bool prepareOutputTensors();
 
   /// @brief Устанавливает путь к модели.
-  [[deprecated]] void setModelFilePath();
+  [[deprecated]] bool setModelFilePath();
 
   /// @brief Подготовка перед запуском вывода.
   /// @param options Опции. Дополнительно смотреть @ref inference::prepareSettings.
@@ -119,11 +116,17 @@ private:
 };
 
 /// @brief Устанавливает путь к модели.
-inline void Inference::setModelFilePath() {
-  inferenceContext_->modelPath.modelDirectoryPath = const_cast<char *>(inference::modelDirectoryPath);
-  inferenceContext_->modelPath.modelFileName = const_cast<char *>(inference::modelFileName);
+inline bool Inference::setModelFilePath() {
+  if(!inferenceContext_) {
+    return false;
+  }
 
-  inferenceContext_->optimizedModelPath.modelDirectoryPath = const_cast<char *>(inference::optimizedModelDirectoryPath);
-  inferenceContext_->optimizedModelPath.modelFileName = const_cast<char *>(inference::optimizedModelFileName);
+  inferenceContext_->modelPath.modelDirectoryPath = inference::modelDirectoryPath;
+  inferenceContext_->modelPath.modelFileName = inference::modelFileName;
+
+  inferenceContext_->optimizedModelPath.modelDirectoryPath = inference::optimizedModelDirectoryPath;
+  inferenceContext_->optimizedModelPath.modelFileName = inference::optimizedModelFileName;
+
+  return true;
 }
 } // namespace inference

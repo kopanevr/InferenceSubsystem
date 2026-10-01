@@ -12,10 +12,10 @@
 //
 
 namespace inference {
-inline const char *modelDirectoryPath = "/models/";
+inline const char *modelDirectoryPath = "../models/";
 inline const char *modelFileName = "model.onnx";
 
-inline const char *optimizedModelDirectoryPath = "/models/";
+inline const char *optimizedModelDirectoryPath = "../models/";
 inline const char *optimizedModelFileName = "optimized_model.onnx";
 
 /// @brief Информация о тензоре.
@@ -56,9 +56,9 @@ struct Tensor final {
 /// @brief
 struct ModelPath final {
   /// @brief Путь к директории модели.
-  char *modelDirectoryPath;
+  const char *modelDirectoryPath;
   /// @brief Имя файла модели.
-  char *modelFileName;
+  const char *modelFileName;
   /// @brief Путь к файлу модели.
   std::string modelFilePath;
 
