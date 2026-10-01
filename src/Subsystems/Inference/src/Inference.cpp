@@ -213,9 +213,6 @@ bool Inference::createInputOutputTensors() {
 
   outputTensor->metaData.shape = inferenceContext_->modelInfo->outputTensorInfo->shape;
 
-  //
-  outputTensor->rawData.resize();
-
   // Создание выходного тензора.
   value = Ort::Value::CreateTensor(
     memoryInfo,

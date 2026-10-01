@@ -90,6 +90,9 @@ private:
   /// @brief Устанавливает путь к модели.
   [[deprecated]] bool setModelFilePath();
 
+  /// @brief
+  [[deprecated]] void setRawBuffersSize();
+
   /// @brief Подготовка перед запуском вывода.
   /// @param options Опции. Дополнительно смотреть @ref inference::prepareSettings.
   bool prepareBeforeStartInference([[maybe_unused]] const uint8_t options = 0);
@@ -128,5 +131,26 @@ inline bool Inference::setModelFilePath() {
   inferenceContext_->optimizedModelPath.modelFileName = inference::optimizedModelFileName;
 
   return true;
+}
+
+/// @brief Устанавливает размеры буферов сырых данных входных и выходных тензоров.
+[[deprecated]] inline void Inference::setRawBuffersSize() {
+    auto resizeBuffer = [this](const auto &inferenceContext, const auto &) {}
+    size_t totalElements = (size_t)1;
+
+    const auto &shape = inferenceContext_->modelInfo->inputTensorInfo->shape;
+    for (const auto &dim : *shape) {
+      totalElements *= static_cast<size_t>(dim);
+    }
+
+    const auto &inputTensorElementDataType = inferenceContext_->modelInfo->inputTensorInfo->tensorElementDataType;
+    size_t elementSize = sizeof(float);
+
+    if (inputTensorElementDataType == ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT) {
+      elementSize = sizeof(float);
+    }
+
+    inferenceContext_->inputTensor->rawData.resize(totalElements* elementSize);
+  };
 }
 } // namespace inference
