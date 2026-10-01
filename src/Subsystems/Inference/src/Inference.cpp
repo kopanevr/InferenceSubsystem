@@ -103,6 +103,8 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
   }
 
   if (prepareProvider()) {
+    DEBUG("Загрузка модели.");
+
     inferenceContext_->sessionOptions->EnableProfiling("");
 
     const auto optimizedModelPath = inferenceContext_->optimizedModelPath.getPathToModelFile();
@@ -112,6 +114,8 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
       // Создание сессии.
       inferenceContext_->session.reset(new (std::nothrow) Ort::Session(*inferenceContext_->env, optimizedModelPath, *inferenceContext_->sessionOptions));
       if (!inferenceContext_->session) {
+        ERROR("Ошибка при создании сессии.");
+        inferenceContext_.reset();
         return false;
       }
     } else {
@@ -121,10 +125,15 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
       if (std::filesystem::exists(modelPath) ||
           std::filesystem::is_directory(inferenceContext_->optimizedModelPath.modelDirectoryPath)) {
         // Установка пути к файлу оптимизированной модели.
-        inferenceContext_->sessionOptions->SetOptimizedModelFilePath(inferenceContext_->optimizedModelPath.modelDirectoryPath);
+        inferenceContext_->sessionOptions->SetOptimizedModelFilePath(optimizedModelPath);
 
         // Создание сессии.
         inferenceContext_->session.reset(new (std::nothrow) Ort::Session(*inferenceContext_->env, modelPath, *inferenceContext_->sessionOptions));
+        if (!inferenceContext_->session) {
+          ERROR("Ошибка при создании сессии.");
+          inferenceContext_.reset();
+          return false;
+        }
       } else {
         ERROR("Ошибка при создании сессии: Файлы моделей не найдены.");
         inferenceContext_.reset();
@@ -136,6 +145,8 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
     inferenceContext_.reset();
     return false;
   }
+
+  DEBUG("Сессия создана.");
 
   // Создание входных и выходных тензоров.
   if (!createInputOutputTensors()) {
@@ -151,6 +162,7 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
 /// @param options Опции.
 bool Inference::prepareProvider(const uint8_t options) {
   DEBUG("Подготовка провайдера вывода.");
+  DEBUG("Подготовка провайдера вывода завершена.");
   return true;
 }
 
@@ -166,9 +178,16 @@ bool Inference::createInputOutputTensors() {
 
   Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
+  inferenceContext_->inputTensor.reset(new (std::nothrow) Tensor());
+  if (!inferenceContext_->inputTensor) {
+    return false;
+  }
+
   const auto &inputTensor = inferenceContext_->inputTensor;
 
   inputTensor->metaData.shape = inferenceContext_->modelInfo->inputTensorInfo->shape;
+
+  inputTensor->rawData.resize(1);
 
   // Создание входного тензора.
   auto value = Ort::Value::CreateTensor(
@@ -185,9 +204,17 @@ bool Inference::createInputOutputTensors() {
     return false;
   }
 
+  inferenceContext_->outputTensor.reset(new (std::nothrow) Tensor());
+    if (!inferenceContext_->outputTensor) {
+    return false;
+  }
+
   const auto &outputTensor = inferenceContext_->outputTensor;
 
   outputTensor->metaData.shape = inferenceContext_->modelInfo->outputTensorInfo->shape;
+
+  //
+  outputTensor->rawData.resize();
 
   // Создание выходного тензора.
   value = Ort::Value::CreateTensor(
@@ -240,6 +267,11 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(InferenceContext &inferenceCo
   }
   inferenceContext.inputTensorNames.push_back(inputNameAllocated.get());
 
+  modelInfo->inputTensorInfo.reset(new (std::nothrow) TensorInfo());
+  if (!modelInfo->inputTensorInfo) {
+    return nullptr;
+  }
+
   // Получение информации о типе входа.
   auto typeInfo = inferenceContext.session->GetInputTypeInfo(0);
   auto tensorTypeAndShapeInfo = typeInfo.GetTensorTypeAndShapeInfo();
@@ -267,15 +299,20 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(InferenceContext &inferenceCo
   }
   inferenceContext.outputTensorNames.push_back(outputNameAllocated.get());
 
+  modelInfo->outputTensorInfo.reset(new (std::nothrow) TensorInfo());
+  if (!modelInfo->outputTensorInfo) {
+    return nullptr;
+  }
+
   // Получение информации о типе выхода.
   typeInfo = inferenceContext.session->GetOutputTypeInfo(0);
   tensorTypeAndShapeInfo = typeInfo.GetTensorTypeAndShapeInfo();
 
   // Получение типа данных элементов выхода.
-  modelInfo->inputTensorInfo->tensorElementDataType = tensorTypeAndShapeInfo.GetElementType();
+  modelInfo->outputTensorInfo->tensorElementDataType = tensorTypeAndShapeInfo.GetElementType();
   // Получение размерности.
-  modelInfo->inputTensorInfo->shape = std::make_shared<std::vector<int64_t>>(tensorTypeAndShapeInfo.GetShape());
-  if (!modelInfo->inputTensorInfo->shape) {
+  modelInfo->outputTensorInfo->shape = std::make_shared<std::vector<int64_t>>(tensorTypeAndShapeInfo.GetShape());
+  if (!modelInfo->outputTensorInfo->shape) {
     return nullptr;
   }
 

@@ -50,7 +50,7 @@ struct Tensor final {
   } metaData;
 
   /// @brief Сырые данные тензора.
-  std::vector<std::byte> rawData;
+  std::vector<uint8_t> rawData;
 };
 
 /// @brief

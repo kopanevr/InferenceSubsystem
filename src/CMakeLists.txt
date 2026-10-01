@@ -26,3 +26,12 @@ add_custom_command(
   COMMAND size Application --format=gnu
   COMMENT "Размеры секций:"
 )
+
+add_custom_command(
+  TARGET Application
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+          ${CMAKE_SOURCE_DIR}/models
+          ${CMAKE_BINARY_DIR}/models
+  COMMENT "Копирование директории моделей в ${CMAKE_BINARY_DIR}."
+)
