@@ -9,4 +9,4 @@
 |  |  |
 | :--: | :--: |
 | **** | **** |
-| ![1](/doc/images/1.PNG) | ![2](/doc/images/2.PNG) |
+| ![1](/doc/images/model.onnx.png) | ![2](/doc/images/.png) |
