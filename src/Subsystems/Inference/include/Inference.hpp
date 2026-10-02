@@ -156,6 +156,7 @@ inline bool Inference::setModelFilePath() {
     const auto &inputTensorElementDataType = tensorInfo->tensorElementDataType;
     size_t elementSize = sizeof(float);
 
+#warning "Дополнить реализацию."
     if (inputTensorElementDataType == ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT) {
       elementSize = sizeof(float);
     }

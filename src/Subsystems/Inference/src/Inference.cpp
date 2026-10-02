@@ -284,12 +284,24 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(InferenceContext &inferenceCo
     return nullptr;
   }
 
+#warning "Дополнить реализацию."
+  auto getTensorElementType = [this](const ONNXTensorElementDataType &type) -> const char * {
+    switch (type) {
+    case ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT:
+      return "float";
+      break;
+    default:
+      break;
+    }
+    return {};
+  };
+
 #if (USER_OPTION_SHOW_MODEL_INFO == 1)
   // Вывод информации о входе.
   LOG("Вход: ");
   LOG("Имя: ", inferenceContext.inputTensorNames.at(0));
   PRINT_TENSOR_SHAPE(modelInfo->inputTensorInfo); // Смотреть выше.
-  LOG("Тип элементов: ", modelInfo->inputTensorInfo->tensorElementDataType);
+  LOG("Тип элементов: ", getTensorElementType(modelInfo->inputTensorInfo->tensorElementDataType));
 #endif
 
   // Получение имени входа.
@@ -321,7 +333,7 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(InferenceContext &inferenceCo
   LOG("Выход: ");
   LOG("Имя: ", inferenceContext.outputTensorNames.at(0));
   PRINT_TENSOR_SHAPE(modelInfo->outputTensorInfo); // Смотреть выше.
-  LOG("Тип элементов: ", modelInfo->outputTensorInfo->tensorElementDataType);
+  LOG("Тип элементов: ", getTensorElementType(modelInfo->outputTensorInfo->tensorElementDataType));
 #endif
 
   return modelInfo;
