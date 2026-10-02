@@ -21,6 +21,12 @@
 
 //
 
+// Подсистемы.
+
+#include "Logger.hpp"
+
+//
+
 #include "onnxruntime_cxx_api.h"
 
 //
@@ -133,24 +139,46 @@ inline bool Inference::setModelFilePath() {
   return true;
 }
 
-/// @brief Устанавливает размеры буферов сырых данных входных и выходных тензоров.
+/// @brief Устанавливает размеры буферов для входного и выходного тензоров.
 [[deprecated]] inline void Inference::setRawBuffersSize() {
-    auto resizeBuffer = [this](const auto &inferenceContext, const auto &) {}
+  auto resizeBuffer = [this](const std::unique_ptr<TensorInfo> &tensorInfo, std::unique_ptr<Tensor> &tensor) -> size_t {
+    const auto &shape = tensorInfo->shape;
+    if (shape->empty()) {
+      return {};
+    }
+
     size_t totalElements = (size_t)1;
 
-    const auto &shape = inferenceContext_->modelInfo->inputTensorInfo->shape;
     for (const auto &dim : *shape) {
       totalElements *= static_cast<size_t>(dim);
     }
 
-    const auto &inputTensorElementDataType = inferenceContext_->modelInfo->inputTensorInfo->tensorElementDataType;
+    const auto &inputTensorElementDataType = tensorInfo->tensorElementDataType;
     size_t elementSize = sizeof(float);
 
     if (inputTensorElementDataType == ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT) {
       elementSize = sizeof(float);
     }
 
-    inferenceContext_->inputTensor->rawData.resize(totalElements* elementSize);
+    const size_t bufferSize = totalElements * elementSize;
+    tensor->rawData.resize(bufferSize);
+
+    return bufferSize;
   };
+
+  INFO(
+    "Размер буфера входного тензора: ",
+    resizeBuffer(
+      inferenceContext_->modelInfo->inputTensorInfo,
+      inferenceContext_->inputTensor),
+    " [байт]."
+  );
+  INFO(
+    "Размер буфера выходного тензора: ",
+    resizeBuffer(
+      inferenceContext_->modelInfo->outputTensorInfo,
+      inferenceContext_->outputTensor),
+    " [байт]."
+  );
 }
 } // namespace inference

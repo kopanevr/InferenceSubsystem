@@ -11,12 +11,6 @@
 
 //
 
-// Подсистемы.
-
-#include "Logger.hpp"
-
-//
-
 using namespace inference;
 
 //
@@ -183,11 +177,17 @@ bool Inference::createInputOutputTensors() {
     return false;
   }
 
+  inferenceContext_->outputTensor.reset(new (std::nothrow) Tensor());
+    if (!inferenceContext_->outputTensor) {
+    return false;
+  }
+
+  // Установка размера буферов для входного и выходного тензоров.
+  setRawBuffersSize();
+
   const auto &inputTensor = inferenceContext_->inputTensor;
 
   inputTensor->metaData.shape = inferenceContext_->modelInfo->inputTensorInfo->shape;
-
-  inputTensor->rawData.resize(1);
 
   // Создание входного тензора.
   auto value = Ort::Value::CreateTensor(
@@ -201,11 +201,6 @@ bool Inference::createInputOutputTensors() {
   auto &inputTensorValue = inferenceContext_->inputTensorValues.at(0);
   inputTensorValue.reset(new (std::nothrow) Ort::Value(std::move(value)));
   if (!inputTensorValue) {
-    return false;
-  }
-
-  inferenceContext_->outputTensor.reset(new (std::nothrow) Tensor());
-    if (!inferenceContext_->outputTensor) {
     return false;
   }
 
