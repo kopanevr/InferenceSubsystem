@@ -16,7 +16,7 @@
 int main(int argc, char *argv[]) {
   auto *const app = app::Application::getInstance();
   int ret = 0;
-  if (!(ret = app->init(argc, argv))) {
+  if ((ret = app->init(argc, argv))) {
     return ret;
   }
 

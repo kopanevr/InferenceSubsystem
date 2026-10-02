@@ -149,6 +149,8 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
     return false;
   }
 
+  INFO("Входной и выходной тензоры созданы.");
+
   return true;
 }
 
@@ -198,6 +200,9 @@ bool Inference::createInputOutputTensors() {
     inputTensor->metaData.shape->size(), //
     inferenceContext_->modelInfo->inputTensorInfo->tensorElementDataType
   );
+
+  inferenceContext_->inputTensorValues.push_back({});
+
   auto &inputTensorValue = inferenceContext_->inputTensorValues.at(0);
   inputTensorValue.reset(new (std::nothrow) Ort::Value(std::move(value)));
   if (!inputTensorValue) {
@@ -217,6 +222,9 @@ bool Inference::createInputOutputTensors() {
     outputTensor->metaData.shape->size(), //
     inferenceContext_->modelInfo->outputTensorInfo->tensorElementDataType
   );
+
+  inferenceContext_->outputTensorValues.push_back({});
+
   auto &outputTensorValue = inferenceContext_->outputTensorValues.at(0);
   outputTensorValue.reset(new (std::nothrow) Ort::Value(std::move(value)));
   if (!outputTensorValue) {
