@@ -397,7 +397,7 @@ bool Inference::prepareInputTensors() {
 
 /// @brief
 bool Inference::inference() {
-  if (!inferenceContext_ || inferenceContext_->session) {
+  if (!inferenceContext_ || !inferenceContext_->session) {
     return false;
   }
 
