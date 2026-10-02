@@ -158,6 +158,7 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
 /// @param options Опции.
 bool Inference::prepareProvider(const uint8_t options) {
   DEBUG("Подготовка провайдера вывода.");
+
   DEBUG("Подготовка провайдера вывода завершена.");
   return true;
 }

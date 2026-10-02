@@ -17,6 +17,10 @@
 
 //
 
+#include "CustomExecutionProvider.hpp"
+
+//
+
 #include "Subsystem.hpp"
 
 //
@@ -39,7 +43,7 @@ namespace subsystemManager {
 
 namespace inference {
 /// @brief
-class Inference : public Subsystem {
+class Inference final : public Subsystem {
 public:
   /// @brief Деструктор.
   ~Inference();
@@ -119,6 +123,8 @@ private:
 
   /// @brief
   std::thread inferenceThread_;
+
+  std::unique_ptr<CustomExecutionProvider> customExecutionProvider_;
 
   /// @brief Контекст вывода.
   std::unique_ptr<InferenceContext> inferenceContext_;
