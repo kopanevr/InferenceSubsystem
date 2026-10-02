@@ -1,4 +1,5 @@
 build/
+temp/__pycache__
 temp/venv
 
 .clang-format

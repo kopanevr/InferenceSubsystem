@@ -150,6 +150,10 @@ inline bool Inference::setModelFilePath() {
     size_t totalElements = (size_t)1;
 
     for (const auto &dim : *shape) {
+      if (dim < 0) {
+        ERROR("Пустая размерность тензора.");
+        return {};
+      }
       totalElements *= static_cast<size_t>(dim);
     }
 

@@ -234,19 +234,6 @@ bool Inference::createInputOutputTensors() {
   return true;
 }
 
-#ifndef NDEBUG
-/// @brief
-#define PRINT_TENSOR_SHAPE(tensorInfo)                                         \
-  do {                                                                         \
-    LOG("Размерность: ");                                                      \
-    LOG("[");                                                                  \
-    for (const auto &dim : *tensorInfo->shape) {                               \
-      dim != tensorInfo->shape->back() ? LOG(" ", dim, ",") : LOG(" ", dim);   \
-    }                                                                          \
-    LOG("]");                                                                  \
-  } while (false)
-#endif
-
 /// @brief Возвращает информацию о модели.
 /// @param inferenceContext Контекст вывода.
 /// @return Информация о модели.
@@ -284,6 +271,15 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(InferenceContext &inferenceCo
     return nullptr;
   }
 
+  auto printTensorShape = [this](const std::unique_ptr<TensorInfo> &tensorInfo) -> void {
+    LOG("Размерность: ");
+    LOG("[");
+    for (const auto &dim : *tensorInfo->shape) {
+      dim != tensorInfo->shape->back() ? LOG(" ", dim, ",") : LOG(" ", dim);
+    }
+    LOG("]");
+  };
+
 #warning "Дополнить реализацию."
   auto getTensorElementType = [this](const ONNXTensorElementDataType &type) -> const char * {
     switch (type) {
@@ -300,7 +296,7 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(InferenceContext &inferenceCo
   // Вывод информации о входе.
   LOG("Вход: ");
   LOG("Имя: ", inferenceContext.inputTensorNames.at(0));
-  PRINT_TENSOR_SHAPE(modelInfo->inputTensorInfo); // Смотреть выше.
+  printTensorShape(modelInfo->inputTensorInfo); // Смотреть выше.
   LOG("Тип элементов: ", getTensorElementType(modelInfo->inputTensorInfo->tensorElementDataType));
 #endif
 
@@ -332,7 +328,7 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(InferenceContext &inferenceCo
   // Вывод информации о входе.
   LOG("Выход: ");
   LOG("Имя: ", inferenceContext.outputTensorNames.at(0));
-  PRINT_TENSOR_SHAPE(modelInfo->outputTensorInfo); // Смотреть выше.
+  printTensorShape(modelInfo->outputTensorInfo); // Смотреть выше.
   LOG("Тип элементов: ", getTensorElementType(modelInfo->outputTensorInfo->tensorElementDataType));
 #endif
 
