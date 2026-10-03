@@ -272,6 +272,7 @@ std::unique_ptr<ModelInfo> Inference::getModelInfo(InferenceContext &inferenceCo
     return nullptr;
   }
 
+  // Выводит размерность тензора.
   auto printTensorShape = [this](const std::unique_ptr<TensorInfo> &tensorInfo) -> void {
     LOG("Размерность: ");
     LOG("[");

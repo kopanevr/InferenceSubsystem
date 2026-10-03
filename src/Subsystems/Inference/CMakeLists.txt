@@ -10,8 +10,6 @@ target_include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/src/Subsystems/Subsystem/include
   ${CMAKE_SOURCE_DIR}/src/Subsystems/Logger/include
-
-  ${CMAKE_CURRENT_SOURCE_DIR}/CustomExecutionProvider/include
 )
 
 target_link_libraries(Inference PRIVATE ${CMAKE_SOURCE_DIR}/thirdParty/onnxruntime-linux-x64-1.30.0/lib/libonnxruntime.so)

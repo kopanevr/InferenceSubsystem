@@ -17,10 +17,6 @@
 
 //
 
-#include "CustomExecutionProvider.hpp"
-
-//
-
 #include "Subsystem.hpp"
 
 //
@@ -123,8 +119,6 @@ private:
 
   /// @brief
   std::thread inferenceThread_;
-
-  std::unique_ptr<CustomExecutionProvider> customExecutionProvider_;
 
   /// @brief Контекст вывода.
   std::unique_ptr<InferenceContext> inferenceContext_;
