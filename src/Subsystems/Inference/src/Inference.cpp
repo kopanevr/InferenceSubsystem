@@ -155,9 +155,24 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
 }
 
 /// @brief Подготовка провайдера вывода.
+/// @warning
 /// @param options Опции.
 bool Inference::prepareProvider(const uint8_t options) {
   DEBUG("Подготовка провайдера вывода.");
+
+  OrtROCMProviderOptions ROCMProviderOptions{};
+
+  std::memset(
+    &ROCMProviderOptions,
+    0,
+    sizeof(ROCMProviderOptions)
+  );
+
+  /*
+  ROCMProviderOptions.device_id = 0;
+  */
+
+  inferenceContext_->sessionOptions->AppendExecutionProvider_ROCM(ROCMProviderOptions);
 
   DEBUG("Подготовка провайдера вывода завершена.");
   return true;
