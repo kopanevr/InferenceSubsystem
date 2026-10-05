@@ -7,6 +7,10 @@
 
 //
 
+#include "OperatorsRegistrator.hpp"
+
+//
+
 #include "BitField.hpp"
 
 //
@@ -94,6 +98,12 @@ bool Inference::prepareBeforeStartInference(const uint8_t options) {
   if (!setModelFilePath()) {
     ERROR("Ошибка при установке путей к моделям.");
     return false;
+  }
+
+  // Регистрация кастомных операторов.
+  {
+    OperatorsRegistrator operatorRegistrator(inferenceContext_->sessionOptions);
+    inferenceContext_->sessionOptions = operatorRegistrator.registerCustomOpt();
   }
 
   if (prepareProvider()) {

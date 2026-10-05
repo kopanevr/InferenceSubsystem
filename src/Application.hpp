@@ -60,12 +60,6 @@ private:
   Application() = default;
   ~Application();
 
-  /// @brief Подготовка при инициализации.
-  /// @details
-  /// @param argc Количество аргументов.
-  /// @param argv Указатель на список аргументов.
-  bool prepare(int argc, char *argv[]);
-
   /// @brief Вывод информации о приложении.
   void printInfo() const;
 
@@ -80,6 +74,10 @@ private:
   /// @brief Менеджер таймера.
   TimerManager timerManager_;
 };
+
+class final {
+
+}
 
 /// @brief Вывод информации о приложении.
 inline void Application::printInfo() const {
